@@ -1,32 +1,39 @@
-
+"""
+Path 1: LLM + Tools
+Speech -> Text -> LLM -> Image
+"""
 
 import whisper
 from transformers import pipeline
 from diffusers import StableDiffusionPipeline
 import torch
 
+print("\n=== PATH 1: LLM + TOOLS ===")
 
-def speech_to_text(audio_path):
-    model = whisper.load_model("base")
-    result = model.transcribe(audio_path)
-    return result["text"]
+# -------- Speech to Text --------
+audio_file = "input.wav"  # provide a short audio file
+whisper_model = whisper.load_model("base")
+result = whisper_model.transcribe(audio_file)
+text_prompt = result["text"]
 
+print("\n[Input] Speech to Text Output:")
+print(text_prompt)
 
-def text_reasoning(text):
-    generator = pipeline("text-generation", model="distilgpt2")
-    output = generator(text, max_length=50)
-    return output[0]["generated_text"]
+# -------- LLM Reasoning --------
+generator = pipeline("text-generation", model="distilgpt2")
+llm_output = generator(text_prompt, max_length=50)[0]["generated_text"]
 
+print("\n[Output] LLM Generated Text:")
+print(llm_output)
 
-def text_to_image(prompt):
-    pipe = StableDiffusionPipeline.from_pretrained(
-        "runwayml/stable-diffusion-v1-5",
-        torch_dtype=torch.float16
-    ).to("cuda")
+# -------- Text to Image --------
+pipe = StableDiffusionPipeline.from_pretrained(
+    "runwayml/stable-diffusion-v1-5",
+    torch_dtype=torch.float16
+).to("cuda")
 
-    image = pipe(prompt).images[0]
-    image.save("result.png")
+image = pipe(llm_output).images[0]
+image.save("path1_output.png")
 
+print("\n[Final Output] Image saved as path1_output.png")
 
-if __name__ == "__main__":
-    print("Path 1 module loaded")
