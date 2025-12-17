@@ -1,19 +1,20 @@
 """
 Path 3: Unified Multimodal Model
-Shared representation for all modalities.
+Single model with shared representations.
 """
 
 import torch
 import torch.nn as nn
 
+print("\n=== PATH 3: UNIFIED MULTIMODAL MODEL ===")
 
+# -------- Unified Model --------
 class UnifiedMultimodalModel(nn.Module):
     def __init__(self, embed_dim=256):
         super().__init__()
-
-        self.text_encoder = nn.Embedding(10000, embed_dim)
-        self.image_encoder = nn.Linear(2048, embed_dim)
-        self.audio_encoder = nn.Linear(128, embed_dim)
+        self.text_embed = nn.Embedding(10000, embed_dim)
+        self.image_embed = nn.Linear(2048, embed_dim)
+        self.audio_embed = nn.Linear(128, embed_dim)
 
         self.transformer = nn.Transformer(
             d_model=embed_dim,
@@ -22,22 +23,26 @@ class UnifiedMultimodalModel(nn.Module):
         )
 
     def forward(self, text, image, audio):
-        t = self.text_encoder(text).mean(dim=1)
-        i = self.image_encoder(image)
-        a = self.audio_encoder(audio)
+        t = self.text_embed(text).mean(dim=1)
+        i = self.image_embed(image)
+        a = self.audio_embed(audio)
 
         combined = (t + i + a) / 3
         combined = combined.unsqueeze(0)
 
         return self.transformer(combined, combined)
 
+# -------- Inputs --------
+text_input = torch.randint(0, 10000, (1, 10))
+image_input = torch.randn(1, 2048)
+audio_input = torch.randn(1, 128)
 
-if __name__ == "__main__":
-    model = UnifiedMultimodalModel()
+print("\n[Input] Text shape:", text_input.shape)
+print("[Input] Image shape:", image_input.shape)
+print("[Input] Audio shape:", audio_input.shape)
 
-    text = torch.randint(0, 10000, (1, 10))
-    image = torch.randn(1, 2048)
-    audio = torch.randn(1, 128)
+# -------- Model Output --------
+model = UnifiedMultimodalModel()
+output = model(text_input, image_input, audio_input)
 
-    output = model(text, image, audio)
-    print("Output shape:", output.shape)
+print("\n[Output] Unified model output shape:", output.shape)
