@@ -36,4 +36,3 @@ image = pipe(llm_output).images[0]
 image.save("path1_output.png")
 
 print("\n[Final Output] Image saved as path1_output.png")
-
